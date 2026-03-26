@@ -1,6 +1,7 @@
 # NeoWiki
 
 A modern, open-source wiki encyclopedia system built with Node.js, Express.js, and Markdown.
+[中文文档](README-zh_CN.md)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D14.0.0-green.svg)
