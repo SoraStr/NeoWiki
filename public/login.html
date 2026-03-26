@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - VocaloWiki</title>
+    <meta name="description" content="登录VocaloWiki百科，开始你的VOCALOID探索之旅">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 背景装饰容器 -->
+    <div id="auth-background"></div>
+
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 登录表单 -->
+    <section class="auth-container">
+        <div class="auth-card">
+            <div style="text-align:center;margin-bottom:30px;">
+                <div style="width:80px;height:80px;background:var(--vocaloid-gradient);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;box-shadow:var(--shadow-glow);">
+                    <svg width="40" height="40" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <h2 class="auth-title" style="margin-bottom:5px;">欢迎回来</h2>
+                <p style="color:var(--text-secondary);font-size:0.9rem;">登录 VocaloWiki 继续探索 VOCALOID 世界</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        用户名
+                    </label>
+                    <input type="text" class="form-input" id="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="m7 11 2 2 4-4"></path>
+                        </svg>
+                        密码
+                    </label>
+                    <input type="password" class="form-input" id="password" placeholder="请输入密码" required>
+                </div>
+                <div id="error-msg" style="color:var(--danger-color);margin-bottom:15px;display:none;padding:10px;background:rgba(239,68,68,0.1);border-radius:var(--radius);border-left:3px solid var(--danger-color);"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;" id="submit-btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                    登录
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>还没有账号？<a href="register.html">立即注册</a></p>
+            </div>
+            
+            <div style="margin-top:25px;padding-top:20px;border-top:1px solid var(--border-color);text-align:center;">
+                <a href="/" style="color:var(--text-secondary);font-size:0.9rem;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px;">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    返回首页
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚容器 -->
+    <div id="footer-container" style="position:relative;z-index:10;"></div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/wiki-settings.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        // 显示提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 登录表单提交
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-msg');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (!username || !password) {
+                errorMsg.textContent = '用户名和密码不能为空';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading" style="padding:0;"></div> 登录中...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const result = await API.login(username, password);
+                
+                if (result.success) {
+                    showToast('登录成功！正在跳转...', 'success');
+                    setTimeout(() => {
+                        // 优先跳转回redirect参数指定的页面
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirect = urlParams.get('redirect');
+                        if (redirect) {
+                            window.location.href = redirect;
+                        } else {
+                            window.location.href = '/home.html';
+                        }
+                    }, 1000);
+                } else {
+                    errorMsg.textContent = result.message || '登录失败';
+                    errorMsg.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> 登录';
+                }
+            } catch (error) {
+                errorMsg.textContent = '网络错误，请稍后重试';
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> 登录';
+            }
+        });
+
+        // 初始化页面组件
+        function initPage() {
+            const user = API.getCurrentUser();
+            // 已登录则跳转
+            if (user) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+                if (redirect) {
+                    window.location.href = redirect;
+                } else {
+                    window.location.href = '/home.html';
+                }
+                return;
+            }
+            VocaloComponents.initPageComponents('auth', {});
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();
+        });
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('nav-links');
+            if (navLinks) navLinks.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

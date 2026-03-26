@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心 - VocaloWiki</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 用户信息 -->
+    <section class="user-page">
+        <div class="container">
+            <div class="user-profile" id="user-profile">
+                <div class="loading" style="padding:60px;"></div>
+            </div>
+
+            <!-- 用户贡献 -->
+            <div class="card" style="margin-top:30px;">
+                <div class="card-header">
+                    <h3 class="card-title">词条贡献</h3>
+                </div>
+                <div id="user-articles" class="search-results">
+                    <div class="loading"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚容器 -->
+    <div id="footer-container"></div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/wiki-settings.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        let userId = null;
+
+        // 初始化页面组件
+        function initPage() {
+            const user = API.getCurrentUser();
+            VocaloComponents.initPageComponents('standard', {
+                activePage: 'user',
+                user: user,
+                showEditorBtn: !!user
+            });
+            return user;
+        }
+                }
+            }
+        }
+
+        // 登出
+        function logout() {
+            API.logout().then(() => {
+                window.location.reload();
+            });
+        }
+
+        // 加载用户信息
+        async function loadUser() {
+            const params = new URLSearchParams(window.location.search);
+            userId = params.get('id');
+
+            // 如果没有指定ID，查看当前登录用户
+            const currentUser = API.getCurrentUser();
+            if (!userId && currentUser) {
+                userId = currentUser.id;
+            }
+
+            if (!userId) {
+                document.getElementById('user-profile').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👤</div>
+                        <h3 class="empty-state-title">未指定用户</h3>
+                        <p>请登录后查看，或访问其他用户主页</p>
+                        <a href="login.html" class="btn btn-primary" style="margin-top:20px;">登录</a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const result = await API.getUser(userId);
+                
+                if (result.success && result.data) {
+                    renderUser(result.data);
+                    loadUserArticles();
+                } else {
+                    document.getElementById('user-profile').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">❌</div>
+                            <h3 class="empty-state-title">用户不存在</h3>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showToast('加载失败', 'error');
+            }
+        }
+
+        // 渲染用户信息
+        function renderUser(user) {
+            // 用户标签（新系统）
+            let tagHtml = '';
+            if (user.tags && user.tags.length > 0) {
+                tagHtml = user.tags.map(tag => 
+                    `<span class="tag" style="background:${tag.color};color:white;margin:3px;">${escapeHtml(tag.name)}</span>`
+                ).join('');
+            }
+            
+            // 旧版标签兼容（如果有的话）
+            const oldTags = user.tag ? user.tag.split(',').filter(t => t.trim()) : [];
+            const oldTagHtml = oldTags.map(tag => 
+                `<span class="tag" style="background:${getTagColor(tag)};color:white;margin:3px;">${escapeHtml(tag)}</span>`
+            ).join('');
+
+            document.getElementById('user-profile').innerHTML = `
+                <div class="user-avatar">${getInitial(user.nickname || user.username)}</div>
+                <h1 class="user-name">${escapeHtml(user.nickname || user.username)}</h1>
+                <p class="user-description">${escapeHtml(user.description) || '暂无自我介绍'}</p>
+                <div class="user-tags">
+                    ${tagHtml || oldTagHtml || '<span style="color:#94a3b8;">暂无授权标签</span>'}
+                </div>
+                ${user.role === 'admin' ? '<span class="tag tag-primary" style="margin-top:15px;">管理员</span>' : ''}
+                <p style="margin-top:20px;color:#94a3b8;font-size:0.9rem;">
+                    加入于 ${formatDate(user.create_date)}
+                </p>
+            `;
+        }
+
+        // 获取标签颜色（兼容旧系统）
+        function getTagColor(tagName) {
+            const colors = {
+                '创始人': '#FF9800',
+                '资深编辑': '#2196F3',
+                '贡献者': '#4CAF50'
+            };
+            return colors[tagName] || '#808080';
+        }
+
+        // 获取首字母
+        function getInitial(name) {
+            return (name || 'U').charAt(0).toUpperCase();
+        }
+
+        // 加载用户贡献的词条
+        async function loadUserArticles() {
+            const container = document.getElementById('user-articles');
+            container.innerHTML = '<div class="loading"></div>';
+
+            try {
+                // 获取所有词条，然后筛选该用户的
+                const result = await API.getArticles({ limit: 100 });
+                
+                if (result.success && result.data) {
+                    const userArticles = result.data.filter(a => a.author_id == userId);
+                    
+                    if (userArticles.length > 0) {
+                        container.innerHTML = '';
+                        userArticles.forEach(article => {
+                            const item = document.createElement('div');
+                            item.className = 'search-result-item';
+                            item.innerHTML = `
+                                <div class="search-result-title">
+                                    <a href="article.html?id=${article.ID}">${escapeHtml(article.title)}</a>
+                                </div>
+                                <div class="search-result-sketch">${escapeHtml(article.sketch || '暂无简介')}</div>
+                                <div style="margin-top:10px;font-size:0.85rem;color:#94a3b8;">
+                                    创建于 ${formatDate(article.create_date)}
+                                </div>
+                            `;
+                            item.onclick = () => {
+                                window.location.href = `/article.html?id=${article.ID}`;
+                            };
+                            container.appendChild(item);
+                        });
+                    } else {
+                        container.innerHTML = '<div class="empty-state"><p>暂无词条贡献</p></div>';
+                    }
+                } else {
+                    container.innerHTML = '<div class="empty-state"><p>暂无词条贡献</p></div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+            }
+        }
+
+        // 显示提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('nav-links');
+            navLinks.classList.toggle('show');
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadWikiSettings();
+            initPage();
+            loadUser();
+        });
+    </script>
+</body>
+</html>

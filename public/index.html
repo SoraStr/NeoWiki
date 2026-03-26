@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocaloWiki - VOCALOID领域专业百科</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="landing-page">
+        <!-- 导航栏容器 -->
+        <div id="navbar-container"></div>
+
+        <!-- 英雄区域 -->
+        <section class="hero">
+            <div class="container">
+                <h1 class="hero-title" id="wiki-title">百科名称</h1>
+                <p class="hero-subtitle" id="wiki-description">
+                    专精于 VOCALOID 领域的百科全书，为全球 VOCALOID 爱好者提供全面、准确、权威的知识库。
+                    从虚拟歌手档案到音乐制作技巧，从经典曲目到创作者生态——在这里，发现属于你的音乐世界。
+                </p>
+                <div class="hero-buttons">
+                    <a href="home.html" class="btn btn-lg">开始探索</a>
+                    <a href="register.html" class="btn btn-lg btn-outline">成为贡献者</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 内容体系 -->
+        <section class="features">
+            <div class="container">
+                <h2 id="features-title" style="text-align:center;margin-bottom:50px;">📚 内容体系</h2>
+                <div id="features-grid" class="features-grid">
+                    <!-- 由 JS 动态渲染 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚容器 -->
+        <div id="footer-container"></div>
+    </div>
+
+    <!-- 初始化模态框 -->
+    <div class="modal-overlay init-modal" id="init-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">初始化百科</h2>
+            </div>
+            <p style="margin-bottom:20px;color:#8b9dc3;">首次运行，请设置百科信息</p>
+            <form class="init-form" id="init-form">
+                <div class="form-group">
+                    <label class="form-label">百科名称</label>
+                    <input type="text" class="form-input" id="init-wiki-name" placeholder="请输入百科名称" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">百科简介</label>
+                    <textarea class="form-input" id="init-wiki-description" placeholder="请输入百科简介（可选）" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">管理员用户名</label>
+                    <input type="text" class="form-input" id="init-username" placeholder="请输入管理员用户名" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">管理员密码</label>
+                    <input type="password" class="form-input" id="init-password" placeholder="请输入管理员密码" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">确认密码</label>
+                    <input type="password" class="form-input" id="init-confirm" placeholder="请再次输入密码" required>
+                </div>
+                <p class="init-error" id="init-error"></p>
+                <button type="submit" class="btn btn-primary" style="width:100%;">创建百科</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        // 检查登录状态并初始化组件
+        function initPage(wikiName) {
+            const user = API.getCurrentUser();
+            const isLoggedIn = !!user;
+            
+            // 使用组件系统初始化页面
+            VocaloComponents.initPageComponents('landing', {
+                activePage: 'landing',
+                user: user,
+                wikiName: wikiName || 'VocaloWiki'
+            });
+            
+            return user;
+        }
+
+        // 登出
+        function logout() {
+            API.logout().then(() => {
+                showToast('已安全登出', 'success');
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1000);
+            });
+        }
+
+
+        // 初始化百科
+        async function initWiki(username, password, wikiName, wikiDescription) {
+            try {
+                const response = await fetch('/api/init-admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, wikiName, wikiDescription })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('init-modal').classList.remove('active');
+                    showToast('百科创建成功！请登录', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 1500);
+                } else {
+                    document.getElementById('init-error').textContent = result.message;
+                    document.getElementById('init-error').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('init-error').textContent = '初始化失败，请检查数据库连接';
+                document.getElementById('init-error').style.display = 'block';
+            }
+        }
+
+        // 加载百科设置
+        async function loadWikiSettings() {
+            try {
+                const result = await API.getSiteSettings();
+                if (result.success && result.data) {
+                    const wikiName = result.data.wiki_name || '百科名称';
+                    const wikiDescription = result.data.wiki_description || '';
+                    
+                    // 更新页面标题
+                    document.title = wikiName;
+                    
+                    // 更新标题
+                    document.getElementById('wiki-title').textContent = wikiName;
+                    
+                    // 更新描述
+                    if (wikiDescription) {
+                        document.getElementById('wiki-description').textContent = wikiDescription;
+                    }
+                    
+                    // 更新全局设置
+                    if (!window.WikiSettings) {
+                        window.WikiSettings = {};
+                    }
+                    window.WikiSettings.wikiName = wikiName;
+                    window.WikiSettings.wikiDescription = wikiDescription;
+                    window.WikiSettings.wikiLogo = result.data.wiki_logo || '';
+                    
+                    // 解析并保存logo设置
+                    if (result.data.wiki_logo) {
+                        try {
+                            window.WikiSettings.logoData = JSON.parse(result.data.wiki_logo);
+                        } catch (e) {
+                            window.WikiSettings.logoData = { type: 'emoji', value: result.data.wiki_logo };
+                        }
+                    } else {
+                        window.WikiSettings.logoData = { type: 'emoji', value: '🎵' };
+                    }
+                    
+                    // 直接更新导航栏logo
+                    const logo = document.querySelector('.logo');
+                    if (logo) {
+                        const logoData = window.WikiSettings.logoData;
+                        let logoContent;
+                        if (logoData?.type === 'image' && logoData.value) {
+                            logoContent = `<img src="${escapeHtml(logoData.value)}" alt="logo" class="logo-image" style="width:32px;height:32px;object-fit:contain;"> <span class="logo-text">${escapeHtml(wikiName)}</span>`;
+                        } else {
+                            logoContent = `<span class="logo-emoji">${logoData?.value || '🎵'}</span> <span class="logo-text">${escapeHtml(wikiName)}</span>`;
+                        }
+                        logo.innerHTML = logoContent;
+                    }
+                    
+                    // 重新初始化组件以更新wiki名称
+                    const user = API.getCurrentUser();
+                    VocaloComponents.initPageComponents('landing', {
+                        activePage: 'landing',
+                        user: user,
+                        wikiName: wikiName
+                    });
+                    
+                    // 加载内容体系设置
+                    loadFeatures();
+                }
+            } catch (error) {
+                console.error('加载百科设置失败:', error);
+            }
+        }
+
+        // 默认功能卡片数据
+        const DEFAULT_FEATURES = [
+            { icon: '🎤', title: '虚拟歌手档案', description: '收录初音未来、镜音铃/连、巡音流歌、MEIKO、KAITO 等经典角色，以及 GUMI、IA、软柠檬等衍生虚拟歌手的详细资料' },
+            { icon: '🎛️', title: 'VOCALOID 技术解析', description: '涵盖 VOCALOID 引擎发展史、软件使用教程、参数调整指南，音乐制作技巧等专业技术内容' },
+            { icon: '🎵', title: '代表作品收录', description: '整理经典曲目、专辑、PV作品及相关创作者信息，追溯 VOCALOID 文化的发展脉络' },
+            { icon: '🎨', title: 'Piapro 创作者生态', description: '介绍围绕 VOCALOID 形成的庞大创作社区，包括插画师、动画师，音乐制作人等创作者' }
+        ];
+
+        // 加载功能卡片
+        async function loadFeatures() {
+            try {
+                const result = await API.getSiteSettings();
+                const titleEl = document.getElementById('features-title');
+                const gridEl = document.getElementById('features-grid');
+                
+                let features = DEFAULT_FEATURES;
+                let featuresTitle = '📚 内容体系';
+                
+                if (result.success && result.data) {
+                    // 加载标题
+                    if (result.data.wiki_features_title) {
+                        featuresTitle = result.data.wiki_features_title;
+                    }
+                    // 加载卡片数据
+                    if (result.data.wiki_features) {
+                        try {
+                            features = JSON.parse(result.data.wiki_features);
+                        } catch (e) {
+                            features = DEFAULT_FEATURES;
+                        }
+                    }
+                }
+                
+                // 更新标题
+                if (titleEl) {
+                    titleEl.textContent = featuresTitle;
+                }
+                
+                // 渲染卡片
+                if (gridEl) {
+                    gridEl.innerHTML = features.map(card => `
+                        <div class="feature-card">
+                            <div class="feature-icon">${card.icon || '📚'}</div>
+                            <h3 class="feature-title">${escapeHtml(card.title || '')}</h3>
+                            <p class="feature-desc">${escapeHtml(card.description || '')}</p>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载功能卡片失败:', error);
+                // 使用默认数据
+                renderDefaultFeatures();
+            }
+        }
+
+        // 渲染默认功能卡片
+        function renderDefaultFeatures() {
+            const gridEl = document.getElementById('features-grid');
+            if (gridEl) {
+                gridEl.innerHTML = DEFAULT_FEATURES.map(card => `
+                    <div class="feature-card">
+                        <div class="feature-icon">${card.icon}</div>
+                        <h3 class="feature-title">${escapeHtml(card.title)}</h3>
+                        <p class="feature-desc">${escapeHtml(card.description)}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 检查初始化状态
+        async function checkInitStatus() {
+            try {
+                const response = await fetch('/api/init-status');
+                const result = await response.json();
+                if (!result.initialized) {
+                    document.getElementById('init-modal').classList.add('active');
+                } else {
+                    await loadWikiSettings();
+                }
+            } catch (error) {
+                console.error('检查初始化状态失败:', error);
+            }
+        }
+
+        // 显示提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('nav-links');
+            navLinks.classList.toggle('show');
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkInitStatus();
+            // 使用设置中的wiki名称初始化页面组件
+            const wikiName = window.WikiSettings?.wikiName || 'VocaloWiki';
+            initPage(wikiName);
+
+            // 初始化表单提交
+            document.getElementById('init-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const wikiName = document.getElementById('init-wiki-name').value.trim();
+                const wikiDescription = document.getElementById('init-wiki-description').value.trim();
+                const username = document.getElementById('init-username').value;
+                const password = document.getElementById('init-password').value;
+                const confirm = document.getElementById('init-confirm').value;
+
+                if (!wikiName) {
+                    document.getElementById('init-error').textContent = '请输入百科名称';
+                    document.getElementById('init-error').style.display = 'block';
+                    return;
+                }
+
+                if (password !== confirm) {
+                    document.getElementById('init-error').textContent = '两次密码输入不一致';
+                    document.getElementById('init-error').style.display = 'block';
+                    return;
+                }
+
+                if (password.length < 6) {
+                    document.getElementById('init-error').textContent = '密码长度不能少于6位';
+                    document.getElementById('init-error').style.display = 'block';
+                    return;
+                }
+
+                initWiki(username, password, wikiName, wikiDescription);
+            });
+        });
+    </script>
+</body>
+</html>

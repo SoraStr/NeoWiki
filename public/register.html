@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - VocaloWiki</title>
+    <meta name="description" content="注册VocaloWiki百科账号，加入VOCALOID爱好者社区">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 背景装饰容器 -->
+    <div id="auth-background"></div>
+
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 注册表单 -->
+    <section class="auth-container">
+        <div class="auth-card">
+            <div style="text-align:center;margin-bottom:30px;">
+                <div style="width:80px;height:80px;background:var(--vocaloid-gradient);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;box-shadow:var(--shadow-glow);">
+                    <svg width="40" height="40" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                </div>
+                <h2 class="auth-title" style="margin-bottom:5px;">加入我们</h2>
+                <p style="color:var(--text-secondary);font-size:0.9rem;">创建账号，开启你的 VOCALOID 探索之旅</p>
+            </div>
+            
+            <form id="register-form">
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        用户名
+                    </label>
+                    <input type="text" class="form-input" id="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                        </svg>
+                        昵称
+                    </label>
+                    <input type="text" class="form-input" id="nickname" placeholder="请输入昵称（可选）">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="m7 11 2 2 4-4"></path>
+                        </svg>
+                        密码
+                    </label>
+                    <input type="password" class="form-input" id="password" placeholder="请输入密码（至少6位）" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="m7 11 2 2 4-4"></path>
+                        </svg>
+                        确认密码
+                    </label>
+                    <input type="password" class="form-input" id="confirm-password" placeholder="请再次输入密码" required>
+                </div>
+                <div id="error-msg" style="color:var(--danger-color);margin-bottom:15px;display:none;padding:10px;background:rgba(239,68,68,0.1);border-radius:var(--radius);border-left:3px solid var(--danger-color);"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;" id="submit-btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                    注册
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>已有账号？<a href="login.html">立即登录</a></p>
+            </div>
+            
+            <div style="margin-top:25px;padding-top:20px;border-top:1px solid var(--border-color);text-align:center;">
+                <a href="/" style="color:var(--text-secondary);font-size:0.9rem;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px;">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    返回首页
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer" style="position:relative;z-index:10;">
+        <div class="container">
+            <p>&copy; 2026 VocaloWiki - VOCALOID领域百科全书</p>
+        </div>
+    </footer>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/wiki-settings.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        // 显示提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 注册表单提交
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const nickname = document.getElementById('nickname').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const errorMsg = document.getElementById('error-msg');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (!username) {
+                errorMsg.textContent = '用户名不能为空';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.textContent = '密码长度不能少于6位';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                errorMsg.textContent = '两次密码输入不一致';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading" style="padding:0;"></div> 注册中...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const result = await API.register(username, password, nickname || username);
+                
+                if (result.success) {
+                    showToast('注册成功！正在跳转...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 1500);
+                } else {
+                    errorMsg.textContent = result.message || '注册失败';
+                    errorMsg.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg> 注册';
+                }
+            } catch (error) {
+                errorMsg.textContent = '网络错误，请稍后重试';
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg> 注册';
+            }
+        });
+
+        // 初始化页面组件
+        function initPage() {
+            const user = API.getCurrentUser();
+            // 已登录则跳转
+            if (user) {
+                window.location.href = '/home.html';
+                return;
+            }
+            VocaloComponents.initPageComponents('auth', {});
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();
+        });
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('nav-links');
+            if (navLinks) navLinks.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

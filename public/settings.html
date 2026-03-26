@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人设置 - VocaloWiki</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 设置页面 -->
+    <section class="settings-page">
+        <div class="container">
+            <h1 style="margin-bottom:30px;">个人设置</h1>
+
+            <!-- 基本信息 -->
+            <div class="settings-section">
+                <h3 class="settings-title">基本信息</h3>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label class="form-label">昵称</label>
+                        <input type="text" class="form-input" id="nickname" placeholder="请输入昵称">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">自我介绍</label>
+                        <textarea class="form-input" id="description" placeholder="介绍一下自己吧..." rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </form>
+            </div>
+
+            <!-- 主题设置 -->
+            <div class="settings-section">
+                <h3 class="settings-title">外观设置</h3>
+                <div class="form-group">
+                    <label class="form-label">选择主题</label>
+                    <div class="theme-selector" id="theme-selector-container">
+                        <!-- 主题选项将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户标签展示 -->
+            <div class="settings-section">
+                <h3 class="settings-title">我的标签</h3>
+                <p style="color:#64748b;margin-bottom:15px;">管理员授权给你的标签勋章（由管理员进行授权）</p>
+                <div id="user-tags-display" class="tag-selector">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- 修改密码 -->
+            <div class="settings-section">
+                <h3 class="settings-title">修改密码</h3>
+                <form id="password-form">
+                    <div class="form-group">
+                        <label class="form-label">旧密码</label>
+                        <input type="password" class="form-input" id="old-password" placeholder="请输入旧密码" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">新密码</label>
+                        <input type="password" class="form-input" id="new-password" placeholder="请输入新密码（至少6位）" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">确认新密码</label>
+                        <input type="password" class="form-input" id="confirm-password" placeholder="请再次输入新密码" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">修改密码</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 VocaloWiki - VOCALOID领域百科全书</p>
+        </div>
+    </footer>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/wiki-settings.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        let userTags = [];
+
+        // 初始化页面组件
+        function initPage() {
+            const user = API.getCurrentUser();
+            if (!user) {
+                window.location.href = '/login.html';
+                return;
+            }
+            VocaloComponents.initPageComponents('standard', {
+                activePage: 'settings',
+                user: user,
+                showEditorBtn: !!user
+            });
+            return user;
+        }
+
+        // 加载用户信息
+        async function loadUserInfo() {
+            const user = API.getCurrentUser();
+            if (user) {
+                document.getElementById('nickname').value = user.nickname || '';
+                document.getElementById('description').value = user.description || '';
+            }
+            
+            // 获取最新用户信息（包括标签）
+            try {
+                const result = await API.getMe();
+                if (result.success && result.data) {
+                    userTags = result.data.tags || [];
+                    renderUserTags();
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+            }
+        }
+
+        // 初始化主题选择
+        function initThemeSelection() {
+            const currentTheme = getCurrentTheme();
+            const container = document.getElementById('theme-selector-container');
+            
+            // 动态生成主题选项
+            container.innerHTML = Object.values(THEMES).map(theme => {
+                const isSelected = theme.id === currentTheme;
+                const previewClass = `theme-preview-${theme.id}`;
+                const icon = getThemeIcon(theme.icon);
+                
+                return `
+                    <label class="theme-option ${isSelected ? 'selected' : ''}" data-theme="${theme.id}">
+                        <input type="radio" name="theme" value="${theme.id}" ${isSelected ? 'checked' : ''}>
+                        <div class="theme-card">
+                            <span class="theme-preview ${previewClass}">
+                                ${icon}
+                            </span>
+                            <span class="theme-name">${theme.name}</span>
+                            <span class="theme-desc">${theme.description}</span>
+                            ${isSelected ? '<span class="theme-selected-badge">当前</span>' : ''}
+                        </div>
+                    </label>
+                `;
+            }).join('');
+            
+            // 绑定主题选择事件
+            container.querySelectorAll('input[name="theme"]').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    selectTheme(e.target.value);
+                });
+            });
+        }
+
+        // 选择主题
+        function selectTheme(themeId) {
+            setTheme(themeId);
+            // 更新选中状态
+            document.querySelectorAll('.theme-option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.querySelector('.theme-selected-badge')?.remove();
+            });
+            
+            const selectedOpt = document.querySelector(`.theme-option[data-theme="${themeId}"]`);
+            if (selectedOpt) {
+                selectedOpt.classList.add('selected');
+                const card = selectedOpt.querySelector('.theme-card');
+                if (card && !card.querySelector('.theme-selected-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'theme-selected-badge';
+                    badge.textContent = '当前';
+                    card.appendChild(badge);
+                }
+            }
+            
+            // 更新 radio 状态
+            document.querySelectorAll('input[name="theme"]').forEach(input => {
+                input.checked = input.value === themeId;
+            });
+            
+            showToast(`已切换到${THEMES[themeId]?.name || themeId}主题`, 'success');
+        }
+        
+        // 获取主题图标
+        function getThemeIcon(iconName) {
+            const icons = {
+                moon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>',
+                sun: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line></svg>',
+                coffee: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>',
+                zap: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
+                leaf: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 21.5C4 19 2 15 2 11c0-4.4 3.6-8 8-8 0 0 8 8 8 8s-8 8-8 8c0 4-2 8-5.5 10.5z"></path></svg>',
+                droplet: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>',
+                sunset: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="1" y1="18" x2="3" y2="18"></line><line x1="21" y1="18" x2="23" y2="18"></line></svg>',
+                terminal: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>'
+            };
+            return icons[iconName] || icons.moon;
+        }
+
+        // 渲染用户标签（只读展示）
+        function renderUserTags() {
+            const container = document.getElementById('user-tags-display');
+            
+            if (userTags.length === 0) {
+                container.innerHTML = '<p style="color:#94a3b8;">暂无授权标签，请联系管理员授权</p>';
+                return;
+            }
+
+            container.innerHTML = userTags.map(tag => `
+                <div class="tag-option selected" style="border-color:${tag.color};background:${tag.color}20;display:inline-flex;margin:5px;">
+                    <span class="tag" style="background:${tag.color};color:white;">${escapeHtml(tag.name)}</span>
+                    <span style="margin-left:8px;color:#64748b;font-size:0.85rem;">${escapeHtml(tag.description || '')}</span>
+                </div>
+            `).join('');
+        }
+
+        // 保存个人信息
+        async function saveProfile(e) {
+            e.preventDefault();
+            
+            const nickname = document.getElementById('nickname').value.trim();
+            const description = document.getElementById('description').value.trim();
+
+            try {
+                const result = await API.updateMe({ nickname, description });
+                if (result.success) {
+                    // 更新本地存储
+                    const user = API.getCurrentUser();
+                    user.nickname = nickname;
+                    user.description = description;
+                    API.setCurrentUser(user);
+                    showToast('信息保存成功！', 'success');
+                } else {
+                    showToast(result.message || '保存失败', 'error');
+                }
+            } catch (error) {
+                showToast('保存失败', 'error');
+            }
+        }
+
+        // 修改密码
+        async function changePassword(e) {
+            e.preventDefault();
+            
+            const oldPassword = document.getElementById('old-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (newPassword.length < 6) {
+                showToast('新密码长度不能少于6位', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast('两次密码输入不一致', 'error');
+                return;
+            }
+
+            try {
+                const result = await API.changePassword(oldPassword, newPassword);
+                if (result.success) {
+                    showToast('密码修改成功！', 'success');
+                    document.getElementById('password-form').reset();
+                } else {
+                    showToast(result.message || '修改失败', 'error');
+                }
+            } catch (error) {
+                showToast('修改失败', 'error');
+            }
+        }
+
+        // 登出
+        function logout() {
+            API.logout().then(() => {
+                window.location.href = '/login.html';
+            });
+        }
+
+        // 显示提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('nav-links');
+            navLinks.classList.toggle('show');
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadWikiSettings();
+            initPage();
+            loadUserInfo();
+            initThemeSelection();
+
+            // 表单提交
+            document.getElementById('profile-form').addEventListener('submit', saveProfile);
+            document.getElementById('password-form').addEventListener('submit', changePassword);
+        });
+    </script>
+</body>
+</html>

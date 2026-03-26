@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词条 - VocaloWiki</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="lib/MDParser.js"></script>
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 词条内容 -->
+    <section class="article-page">
+        <div class="container">
+            <!-- 标签切换 -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="content">正文</button>
+                <button class="admin-tab" data-tab="history">编辑记录</button>
+                <button class="admin-tab" data-tab="edit" id="edit-tab" style="display:none;">编辑</button>
+            </div>
+
+            <!-- 正文 -->
+            <div id="content-panel">
+                <div class="article-header">
+                    <h1 class="article-title" id="article-title">加载中...</h1>
+                    <div class="article-meta">
+                        <span id="article-date"></span>
+                        <span id="article-author"></span>
+                    </div>
+                    <div class="article-tags" id="article-tags"></div>
+                </div>
+                <div class="article-content" id="article-content">
+                    <div class="loading"></div>
+                </div>
+                <div class="article-actions" id="article-actions" style="display:none;">
+                    <button class="btn btn-primary" onclick="window.location.href='editor.html?id=' + getArticleId()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        编辑词条
+                    </button>
+                </div>
+            </div>
+
+            <!-- 编辑记录 -->
+            <div id="history-panel" style="display:none;">
+                <h3 style="margin-bottom:20px;">编辑历史</h3>
+                <div id="history-list" class="history-list">
+                    <div class="loading"></div>
+                </div>
+            </div>
+
+            <!-- 跳转编辑器提示 -->
+            <div id="edit-panel" style="display:none;">
+                <div class="card" style="text-align:center;padding:60px;">
+                    <div style="font-size:48px;margin-bottom:20px;">✏️</div>
+                    <h3 style="margin-bottom:15px;">编辑词条</h3>
+                    <p style="color:#64748b;margin-bottom:20px;">点击下方按钮在新页面编辑词条</p>
+                    <button class="btn btn-primary btn-lg" onclick="window.open('/editor.html?id=' + getArticleId(), '_blank')">
+                        打开编辑器
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚容器 -->
+    <div id="footer-container"></div>
+
+    <!-- 回退确认模态框 -->
+    <div class="modal-overlay" id="rollback-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">确认回退</h3>
+                <button class="modal-close" onclick="closeRollbackModal()">&times;</button>
+            </div>
+            <p style="margin-bottom:20px;">确定要将词条回退到此版本吗？</p>
+            <div id="rollback-info" style="background:#f8fafc;padding:15px;border-radius:8px;margin-bottom:20px;"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button class="btn btn-outline" onclick="closeRollbackModal()">取消</button>
+                <button class="btn btn-danger" onclick="confirmRollback()">确认回退</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/wiki-settings.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        let articleId = null;
+        let articleData = null;
+        let parser = null;
+        let selectedEditId = null;
+
+        // 获取文章ID
+        function getArticleId() {
+            return articleId;
+        }
+
+        // 初始化页面组件
+        function initPage() {
+            const user = API.getCurrentUser();
+            VocaloComponents.initPageComponents('standard', {
+                activePage: 'article',
+                user: user,
+                showEditorBtn: !!user
+            });
+            if (user) {
+                document.getElementById('edit-tab').style.display = 'inline-block';
+                document.getElementById('article-actions').style.display = 'flex';
+            }
+            return user;
+        }
+
+        // 登出
+        function logout() {
+            API.logout().then(() => {
+                window.location.reload();
+            });
+        }
+
+        // 加载词条
+        async function loadArticle() {
+            const params = new URLSearchParams(window.location.search);
+            articleId = params.get('id');
+
+            if (!articleId) {
+                showToast('缺少词条ID', 'error');
+                return;
+            }
+
+            try {
+                const result = await API.getArticle(articleId);
+                
+                if (result.success && result.data) {
+                    articleData = result.data;
+                    renderArticle();
+                } else {
+                    showToast('词条不存在', 'error');
+                    document.getElementById('article-title').textContent = '词条不存在';
+                    document.getElementById('article-content').innerHTML = '<p>该词条可能已被删除。</p>';
+                }
+            } catch (error) {
+                showToast('加载失败', 'error');
+            }
+        }
+
+        // 渲染词条
+        function renderArticle() {
+            if (!articleData) return;
+
+            document.getElementById('article-title').textContent = articleData.title;
+            document.getElementById('article-date').textContent = `创建于 ${formatDate(articleData.create_date)}`;
+            
+            if (articleData.author) {
+                document.getElementById('article-author').innerHTML = `作者：<a href="user.html?id=${articleData.author.id}">${escapeHtml(articleData.author.nickname)}</a>`;
+            }
+
+            // 渲染标签
+            const tagsContainer = document.getElementById('article-tags');
+            if (articleData.tags && articleData.tags.length > 0) {
+                tagsContainer.innerHTML = articleData.tags.map(tag => `
+                    <a href="search.html?tag=${tag.ID}" class="article-tag" style="background: ${tag.color}20; color: ${tag.color}; border: 1px solid ${tag.color}40;">
+                        <span class="tag-dot" style="background: ${tag.color}"></span>
+                        ${escapeHtml(tag.name)}
+                    </a>
+                `).join('');
+            } else {
+                tagsContainer.innerHTML = '';
+            }
+
+            // 使用MDParser解析Markdown
+            if (!parser) {
+                parser = new MDParser({
+                    sanitize: true,
+                    highlight: true,
+                    gfm: true,
+                    tables: true
+                });
+            }
+
+            const html = parser.parse(articleData.content || '');
+            document.getElementById('article-content').innerHTML = html || '<p>暂无内容</p>';
+        }
+
+        // 更新预览
+        function updatePreview() {
+            const content = document.getElementById('edit-content').value;
+            if (!parser) {
+                parser = new MDParser({
+                    sanitize: true,
+                    highlight: true,
+                    gfm: true,
+                    tables: true
+                });
+            }
+            document.getElementById('edit-preview').innerHTML = parser.parse(content) || '<p style="color:#94a3b8;">预览区域</p>';
+        }
+
+        // 保存词条
+        async function saveArticle() {
+            const user = API.getCurrentUser();
+            if (!user) {
+                showToast('请先登录', 'error');
+                return;
+            }
+
+            const title = document.getElementById('edit-title').value.trim();
+            const content = document.getElementById('edit-content').value;
+            const description = document.getElementById('edit-desc').value.trim() || '更新词条';
+
+            if (!title) {
+                showToast('标题不能为空', 'error');
+                return;
+            }
+
+            try {
+                const result = await API.updateArticle(articleId, {
+                    title,
+                    content,
+                    sketch: content.substring(0, 200),
+                    description
+                });
+
+                if (result.success) {
+                    showToast('保存成功！', 'success');
+                    articleData.title = title;
+                    articleData.content = content;
+                    renderArticle();
+                    switchTab('content');
+                } else {
+                    showToast(result.message || '保存失败', 'error');
+                }
+            } catch (error) {
+                showToast('保存失败', 'error');
+            }
+        }
+
+        // 加载编辑历史
+        async function loadHistory() {
+            const container = document.getElementById('history-list');
+            container.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const result = await API.getArticleHistory(articleId);
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = '';
+                    result.data.forEach(record => {
+                        const item = document.createElement('div');
+                        item.className = 'history-item';
+                        item.innerHTML = `
+                            <div class="history-info">
+                                <div class="history-date">${formatDateTime(record.edit_date)}</div>
+                                <div class="history-desc">${escapeHtml(record.description || '无描述')}</div>
+                                ${record.editor ? `<div class="history-editor">编辑者：${escapeHtml(record.editor.nickname)}</div>` : ''}
+                            </div>
+                            <div class="history-actions">
+                                <button class="btn btn-outline btn-sm" onclick="viewVersion(${record.ID})">查看</button>
+                                <button class="btn btn-danger btn-sm" onclick="openRollbackModal(${record.ID}, '${escapeHtml(record.description || '')}', '${record.edit_date}')">回退</button>
+                            </div>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<div class="empty-state"><p>暂无编辑记录</p></div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+            }
+        }
+
+        // 查看版本
+        function viewVersion(editId) {
+            window.location.href = `/article.html?id=${articleId}&editId=${editId}`;
+        }
+
+        // 打开回退模态框
+        function openRollbackModal(editId, desc, date) {
+            selectedEditId = editId;
+            document.getElementById('rollback-info').innerHTML = `
+                <p><strong>版本时间：</strong>${formatDateTime(date)}</p>
+                <p><strong>修改说明：</strong>${escapeHtml(desc)}</p>
+            `;
+            document.getElementById('rollback-modal').classList.add('active');
+        }
+
+        // 关闭回退模态框
+        function closeRollbackModal() {
+            document.getElementById('rollback-modal').classList.remove('active');
+            selectedEditId = null;
+        }
+
+        // 确认回退
+        async function confirmRollback() {
+            if (!selectedEditId) return;
+
+            try {
+                const result = await API.rollbackArticle(articleId, selectedEditId);
+                if (result.success) {
+                    showToast('回退成功！', 'success');
+                    closeRollbackModal();
+                    loadArticle();
+                    loadHistory();
+                } else {
+                    showToast(result.message || '回退失败', 'error');
+                }
+            } catch (error) {
+                showToast('回退失败', 'error');
+            }
+        }
+
+        // 切换标签
+        function switchTab(tabName) {
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            
+            document.getElementById('content-panel').style.display = tabName === 'content' ? 'block' : 'none';
+            document.getElementById('history-panel').style.display = tabName === 'history' ? 'block' : 'none';
+            document.getElementById('edit-panel').style.display = tabName === 'edit' ? 'block' : 'none';
+
+            if (tabName === 'history') {
+                loadHistory();
+            }
+        }
+
+        // 显示提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('nav-links');
+            navLinks.classList.toggle('show');
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 格式化日期时间
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadWikiSettings();
+            initPage();
+            loadArticle();
+
+            // 标签切换
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchTab(tab.dataset.tab);
+                });
+            });
+
+            // 预览更新（仅当编辑区域存在时）
+            const editContent = document.getElementById('edit-content');
+            if (editContent) {
+                editContent.addEventListener('input', updatePreview);
+            }
+
+            // 检查是否有编辑ID参数
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('editId')) {
+                switchTab('history');
+            }
+        });
+    </script>
+</body>
+</html>

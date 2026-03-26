@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑词条 - VocaloWiki</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="lib/editor-styles.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <!-- 顶部信息区 -->
+    <div class="wiki-editor-header">
+        <h1 id="page-title">创建新词条</h1>
+        <input type="text" class="title-input" id="article-title" placeholder="请输入词条标题..." style="flex:1;">
+    </div>
+    
+    <!-- 简介区域 -->
+    <div class="wiki-extra-section" id="extra-section">
+        <div class="extra-field">
+            <label class="extra-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                词条简介
+            </label>
+            <textarea class="extra-textarea" id="article-sketch" placeholder="请输入词条简介（将显示在卡片中，建议50-200字）" rows="2"></textarea>
+            <span class="extra-hint">简介会显示在词条卡片中，帮助用户快速了解词条内容</span>
+        </div>
+    </div>
+    
+    <!-- 标签选择区 -->
+    <div class="wiki-tags-section" id="tags-section">
+        <div class="tags-header">
+            <span class="tags-label">词条标签</span>
+            <span class="tags-hint">选择相关标签（可多选）</span>
+        </div>
+        <div class="tags-container" id="tags-container"><div class="loading-tags">加载中...</div></div>
+    </div>
+
+    <!-- 主体编辑器区域 -->
+    <div class="wiki-editor-container">
+        <div class="app">
+            <!-- 工具栏 -->
+            <header class="toolbar">
+                <div class="toolbar-left">
+                    <span style="font-size:13px;color:var(--text-muted);">词条内容</span>
+                </div>
+                <div class="toolbar-center">
+                    <div class="format-buttons">
+                        <button class="format-btn" data-format="bold" title="粗体 (Ctrl+B)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                                <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="italic" title="斜体 (Ctrl+I)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="19" y1="4" x2="10" y2="4"></line>
+                                <line x1="14" y1="20" x2="5" y2="20"></line>
+                                <line x1="15" y1="4" x2="9" y2="20"></line>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="strikethrough" title="删除线">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="4" y1="12" x2="20" y2="12"></line>
+                                <path d="M17.5 7.5c-1-2-3.5-3.5-6-3.5-3 0-5.5 2-5.5 4.5 0 2 1.5 3.5 3.5 4 0 1.5.5 2.5 2 3"></path>
+                            </svg>
+                        </button>
+                        <span class="separator"></span>
+                        <button class="format-btn" data-format="h1" title="标题1"><span class="text-btn">H1</span></button>
+                        <button class="format-btn" data-format="h2" title="标题2"><span class="text-btn">H2</span></button>
+                        <button class="format-btn" data-format="h3" title="标题3"><span class="text-btn">H3</span></button>
+                        <span class="separator"></span>
+                        <button class="format-btn" data-format="ul" title="无序列表">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <circle cx="4" cy="6" r="1" fill="currentColor"></circle>
+                                <circle cx="4" cy="12" r="1" fill="currentColor"></circle>
+                                <circle cx="4" cy="18" r="1" fill="currentColor"></circle>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="ol" title="有序列表">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="10" y1="6" x2="21" y2="6"></line>
+                                <line x1="10" y1="12" x2="21" y2="12"></line>
+                                <line x1="10" y1="18" x2="21" y2="18"></line>
+                                <text x="3" y="8" font-size="8" fill="currentColor">1</text>
+                                <text x="3" y="14" font-size="8" fill="currentColor">2</text>
+                                <text x="3" y="20" font-size="8" fill="currentColor">3</text>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="task" title="任务列表">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="5" width="4" height="4" rx="1"></rect>
+                                <line x1="10" y1="7" x2="21" y2="7"></line>
+                                <rect x="3" y="13" width="4" height="4" rx="1"></rect>
+                                <line x1="10" y1="15" x2="21" y2="15"></line>
+                            </svg>
+                        </button>
+                        <span class="separator"></span>
+                        <button class="format-btn" data-format="link" title="链接 (Ctrl+K)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="image" title="图片" onclick="openImageModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="code" title="行内代码">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="codeblock" title="代码块">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <polyline points="8 8 5 12 8 16"></polyline>
+                                <polyline points="16 8 19 12 16 16"></polyline>
+                            </svg>
+                        </button>
+                        <span class="separator"></span>
+                        <button class="format-btn" data-format="blockquote" title="引用">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"></path>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="hr" title="分割线">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                            </svg>
+                        </button>
+                        <button class="format-btn" data-format="table" title="表格">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <line x1="3" y1="9" x2="21" y2="9"></line>
+                                <line x1="3" y1="15" x2="21" y2="15"></line>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                                <line x1="15" y1="3" x2="15" y2="21"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <button class="action-btn" id="clearBtn" title="清空">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        清空
+                    </button>
+                </div>
+            </header>
+
+            <!-- 编辑区域 -->
+            <main class="editor-container">
+                <div class="editor-panel">
+                    <div class="panel-header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        <span>编辑器</span>
+                    </div>
+                    <textarea 
+                        id="editor" 
+                        class="editor-textarea"
+                        placeholder="在此输入 Markdown 内容..."
+                        spellcheck="false"
+                    ></textarea>
+                </div>
+                <div class="divider" id="divider">
+                    <div class="divider-handle"></div>
+                </div>
+                <div class="preview-panel">
+                    <div class="panel-header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>预览</span>
+                        <div class="theme-toggle">
+                            <button class="theme-btn active" data-theme="light" title="浅色主题">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                            </button>
+                            <button class="theme-btn" data-theme="dark" title="深色主题">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="preview" class="preview-content"></div>
+                </div>
+            </main>
+
+            <!-- 状态栏 -->
+            <footer class="statusbar">
+                <div class="status-left">
+                    <span class="status-item">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                            <line x1="9" y1="20" x2="15" y2="20"></line>
+                            <line x1="12" y1="4" x2="12" y2="20"></line>
+                        </svg>
+                        <span id="lineCount">1</span> 行
+                    </span>
+                    <span class="status-item">
+                        <span id="charCount">0</span> 字符
+                    </span>
+                </div>
+                <div class="status-center">
+                    <span class="status-item" id="statusMessage">就绪</span>
+                </div>
+                <div class="status-right">
+                    <span class="status-item">MDParser 所见即所得编辑器</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- 底部操作区 -->
+    <div class="wiki-editor-footer">
+        <span class="status-text" id="auto-save-status"></span>
+        <div class="action-buttons">
+            <button class="btn btn-cancel" onclick="window.location.href='home.html'">取消</button>
+            <button class="btn btn-primary" id="submit-btn" onclick="submitArticle()">
+                <span id="submit-text">创建词条</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast容器 -->
+    <div class="wiki-toast-container" id="toastContainer"></div>
+
+    <!-- 图片上传模态框 -->
+    <div class="wiki-modal-overlay" id="image-modal" onclick="closeImageModal(event)">
+        <div class="wiki-modal" onclick="event.stopPropagation()">
+            <div class="wiki-modal-header">
+                <h3>图片管理</h3>
+                <button class="wiki-modal-close" onclick="closeImageModal()">&times;</button>
+            </div>
+            <div class="wiki-modal-body">
+                <!-- 上传区域 -->
+                <div class="image-upload-section">
+                    <input type="file" id="image-input" accept="image/*" style="display:none" onchange="handleImageSelect(this)">
+                    <button class="btn btn-primary" onclick="document.getElementById('image-input').click()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        上传图片
+                    </button>
+                    <span class="upload-hint">支持 JPG、PNG、GIF、WebP，最大 5MB</span>
+                    <div id="upload-progress" class="upload-progress" style="display:none;">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+                <!-- 图片库 -->
+                <div class="image-library">
+                    <h4>我的图片库</h4>
+                    <div id="image-list" class="image-grid">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/MDParser.js"></script>
+    <script src="lib/editor-app.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wiki-settings.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        let editArticleId = null;
+        let availableTags = [];
+        let selectedTagIds = [];
+
+        // 加载可用词条标签
+        async function loadTags() {
+            try {
+                const result = await API.getArticleTags();
+                if (result.success && result.data) {
+                    availableTags = result.data;
+                    renderTags();
+                }
+            } catch (error) {
+                console.error('加载标签失败:', error);
+            }
+        }
+
+        // 渲染标签列表
+        function renderTags() {
+            const container = document.getElementById('tags-container');
+            if (!container) return;
+            
+            if (availableTags.length === 0) {
+                container.innerHTML = '<span class="loading-tags">暂无标签</span>';
+                return;
+            }
+            
+            container.innerHTML = availableTags.map(tag => `
+                <div class="tag-item ${selectedTagIds.includes(tag.ID) ? 'selected' : ''}" 
+                     data-id="${tag.ID}" 
+                     style="color: ${tag.color || '#808080'}"
+                     onclick="toggleTag(${tag.ID})">
+                    <span class="tag-dot" style="background: ${tag.color || '#808080'}"></span>
+                    ${tag.name}
+                </div>
+            `).join('');
+        }
+
+        // 切换标签选择
+        function toggleTag(tagId) {
+            const index = selectedTagIds.indexOf(tagId);
+            if (index === -1) {
+                selectedTagIds.push(tagId);
+            } else {
+                selectedTagIds.splice(index, 1);
+            }
+            renderTags();
+        }
+
+        // 初始化页面组件
+        async function initPage() {
+            const user = API.getCurrentUser();
+            if (!user) {
+                showToast('请先登录', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
+                }, 1000);
+                return false;
+            }
+            
+            // 验证session是否有效
+            try {
+                const result = await API.getMe();
+                if (!result.success) {
+                    API.clearCurrentUser();
+                    showToast('登录已过期，请重新登录', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
+                    }, 1500);
+                    return false;
+                }
+            } catch (e) {
+                console.error('验证登录状态失败:', e);
+            }
+            
+            // 使用编辑器组件渲染导航栏
+            VocaloComponents.initPageComponents('editor', { user: user });
+            return true;
+        }
+
+        // 登出
+        function logout() {
+            API.logout().then(() => {
+                window.location.href = '/login.html';
+            });
+        }
+
+        // 加载已有词条
+        async function loadExistingArticle() {
+            const params = new URLSearchParams(window.location.search);
+            editArticleId = params.get('id');
+
+            if (editArticleId) {
+                document.getElementById('page-title').textContent = '编辑词条';
+                document.getElementById('submit-text').textContent = '保存修改';
+
+                try {
+                    const result = await API.getArticle(editArticleId);
+                    if (result.success && result.data) {
+                        document.getElementById('article-title').value = result.data.title || '';
+                        document.getElementById('editor').value = result.data.content || '';
+                        // 加载简介
+                        if (result.data.sketch) {
+                            document.getElementById('article-sketch').value = result.data.sketch || '';
+                        }
+                        // 加载已有标签
+                        if (result.data.tags && result.data.tags.length > 0) {
+                            selectedTagIds = result.data.tags.map(t => t.ID);
+                            renderTags();
+                        }
+                        // 触发预览更新
+                        if (typeof renderPreview === 'function') {
+                            renderPreview();
+                        }
+                        if (typeof updateStatus === 'function') {
+                            updateStatus();
+                        }
+                    }
+                } catch (error) {
+                    showToast('加载词条失败', 'error');
+                }
+            }
+        }
+
+        // 提交词条
+        async function submitArticle() {
+            const title = document.getElementById('article-title').value.trim();
+            const content = document.getElementById('editor').value;
+            const sketch = document.getElementById('article-sketch').value.trim() || content.substring(0, 200);
+
+            if (!title) {
+                showToast('标题不能为空', 'error');
+                return;
+            }
+
+            if (!content) {
+                showToast('内容不能为空', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            const submitText = document.getElementById('submit-text');
+            submitBtn.disabled = true;
+            submitText.textContent = '提交中...';
+
+            try {
+                let result;
+                if (editArticleId) {
+                    result = await API.updateArticle(editArticleId, {
+                        title,
+                        content,
+                        sketch: sketch,
+                        description: '更新词条',
+                        tags: selectedTagIds
+                    });
+                } else {
+                    result = await API.createArticle(title, content, sketch, selectedTagIds);
+                }
+
+                if (result.success) {
+                    showToast(editArticleId ? '保存成功！' : '创建成功！', 'success');
+                    setTimeout(() => {
+                        if (editArticleId) {
+                            window.location.href = `/article.html?id=${editArticleId}`;
+                        } else {
+                            window.location.href = `/article.html?id=${result.data.id}`;
+                        }
+                    }, 1000);
+                } else {
+                    showToast(result.message || '提交失败', 'error');
+                    submitBtn.disabled = false;
+                    submitText.textContent = editArticleId ? '保存修改' : '创建词条';
+                }
+            } catch (error) {
+                showToast('提交失败', 'error');
+                submitBtn.disabled = false;
+                submitText.textContent = editArticleId ? '保存修改' : '创建词条';
+            }
+        }
+
+        // 显示Toast
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'wiki-toast ' + (type || 'info');
+            toast.innerHTML = '<span>' + message + '</span>';
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 2500);
+        }
+
+        // ============ 图片上传相关 ============
+
+        // 打开图片模态框
+        function openImageModal() {
+            document.getElementById('image-modal').classList.add('active');
+            loadMyImages();
+        }
+
+        // 关闭图片模态框
+        function closeImageModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('image-modal').classList.remove('active');
+        }
+
+        // 处理图片选择
+        async function handleImageSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // 验证文件类型
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                showToast('仅支持 JPG、PNG、GIF、WebP 格式', 'error');
+                return;
+            }
+
+            // 验证文件大小
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('图片大小不能超过 5MB', 'error');
+                return;
+            }
+
+            const progress = document.getElementById('upload-progress');
+            progress.style.display = 'block';
+
+            try {
+                const result = await API.uploadImage(file);
+                if (result.success) {
+                    showToast('图片上传成功！', 'success');
+                    loadMyImages();
+                } else {
+                    showToast(result.message || '上传失败', 'error');
+                }
+            } catch (error) {
+                showToast('图片上传失败', 'error');
+            } finally {
+                progress.style.display = 'none';
+                input.value = '';
+            }
+        }
+
+        // 加载我的图片
+        async function loadMyImages() {
+            const container = document.getElementById('image-list');
+            container.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                const result = await API.getMyImages(50, 0);
+                if (result.success && result.data && result.data.length > 0) {
+                    container.innerHTML = '';
+                    result.data.forEach(img => {
+                        const item = document.createElement('div');
+                        item.className = 'image-item';
+                        item.innerHTML = `
+                            <img src="${img.url}" alt="${img.original_name}" onclick="insertImage('${img.url}')">
+                            <button class="image-delete" onclick="event.stopPropagation(); deleteMyImage(${img.id}, this)">&times;</button>
+                            <div class="image-name">${img.original_name}</div>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px;">暂无上传的图片</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p style="color:#ef4444;text-align:center;padding:20px;">加载失败</p>';
+            }
+        }
+
+        // 插入图片到编辑器
+        function insertImage(url) {
+            const textarea = document.getElementById('editor');
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+
+            const imageMarkdown = `\n![图片](${url})\n`;
+            textarea.value = textBefore + imageMarkdown + textAfter;
+
+            // 移动光标到图片后
+            const newPos = cursorPos + imageMarkdown.length;
+            textarea.selectionStart = newPos;
+            textarea.selectionEnd = newPos;
+            textarea.focus();
+
+            // 更新预览
+            if (typeof renderPreview === 'function') renderPreview();
+            if (typeof updateStatus === 'function') updateStatus();
+
+            closeImageModal();
+            showToast('图片已插入', 'success');
+        }
+
+        // 删除图片
+        async function deleteMyImage(id, btn) {
+            if (!confirm('确定要删除这张图片吗？')) return;
+
+            try {
+                const result = await API.deleteImage(id);
+                if (result.success) {
+                    btn.closest('.image-item').remove();
+                    showToast('图片已删除', 'success');
+                } else {
+                    showToast(result.message || '删除失败', 'error');
+                }
+            } catch (error) {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadWikiSettings();
+            const isLoggedIn = await initPage();
+            if (isLoggedIn) {
+                loadTags(); // 加载标签
+                loadExistingArticle();
+            }
+
+            // 覆盖编辑器的清空按钮
+            const clearBtn = document.getElementById('clearBtn');
+            if (clearBtn) {
+                clearBtn.onclick = function() {
+                    if (document.getElementById('editor').value && confirm('确定要清空编辑器吗？')) {
+                        document.getElementById('editor').value = '';
+                        if (typeof renderPreview === 'function') renderPreview();
+                        if (typeof updateStatus === 'function') updateStatus();
+                    }
+                };
+            }
+            
+            // 监听主题切换，更新编辑器背景
+            window.addEventListener('themechange', (e) => {
+                const theme = e.detail.theme;
+                const isDark = theme === 'dark' || theme === 'cyberpunk' || theme === 'sunset' || theme === 'hacker';
+                const root = document.documentElement;
+                
+                // 更新编辑器CSS变量
+                const editorRoot = document.querySelector('.wiki-editor-container') || document.querySelector('.app');
+                if (editorRoot) {
+                    // 直接应用主题背景色
+                    editorRoot.style.backgroundColor = getComputedStyle(root).getPropertyValue('--bg-secondary').trim() || (isDark ? '#1a1a2e' : '#ffffff');
+                }
+                
+                // 更新编辑器内部元素
+                document.querySelectorAll('.editor-textarea, .preview-content').forEach(el => {
+                    el.style.backgroundColor = getComputedStyle(root).getPropertyValue('--bg-secondary').trim() || (isDark ? '#1a1a2e' : '#ffffff');
+                });
+                
+                document.querySelectorAll('.toolbar, .panel-header, .statusbar, .format-buttons, .action-btn').forEach(el => {
+                    const bgColor = getComputedStyle(root).getPropertyValue('--bg-tertiary').trim() || (isDark ? '#252547' : '#f1f5f9');
+                    el.style.backgroundColor = bgColor;
+                });
+            });
+            
+            // 页面加载时也同步一次主题
+            const currentTheme = getCurrentTheme();
+            window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: currentTheme } }));
+        });
+    </script>
+</body>
+</html>

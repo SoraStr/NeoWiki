@@ -1,0 +1,1087 @@
+/* MDParser 编辑器样式 */
+
+/* 编辑器使用全局CSS变量，保持与主题系统同步 */
+.editor-textarea,
+.preview-content,
+.toolbar,
+.editor-container,
+.editor-panel,
+.preview-panel,
+.panel-header,
+.statusbar,
+.format-buttons,
+.action-btn {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* 确保编辑器区域背景正确 */
+.wiki-editor-container {
+    background-color: var(--bg-secondary);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* App Container - 编辑器主体 */
+.app {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0; /* 修复flex子元素溢出问题 */
+    background-color: var(--bg-secondary);
+}
+
+/* 重置全局样式对编辑器的影响 */
+.wiki-editor-container *,
+.wiki-editor-container *::before,
+.wiki-editor-container *::after {
+    box-sizing: border-box;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    padding: 0 16px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toolbar-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.logo svg {
+    color: var(--accent-color);
+}
+
+/* Format Buttons */
+.format-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background-color: var(--bg-tertiary);
+    border-radius: 8px;
+}
+
+.format-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.format-btn:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.format-btn:active {
+    transform: scale(0.95);
+}
+
+.format-btn.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+.text-btn {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.separator {
+    width: 1px;
+    height: 20px;
+    background: var(--border-color);
+    margin: 0 4px;
+}
+
+/* Action Buttons */
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.action-btn.primary {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+/* Editor Container */
+.editor-container {
+    display: flex;
+    flex: 1;
+    min-height: 200px;
+    overflow: hidden;
+}
+
+/* Editor Panel */
+.editor-panel,
+.preview-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.editor-panel {
+    flex: 1;
+}
+
+.preview-panel {
+    flex: 1;
+    border-left: 1px solid var(--border-color);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.theme-toggle {
+    display: flex;
+    margin-left: auto;
+    gap: 4px;
+}
+
+.theme-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.theme-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.theme-btn.active {
+    background: var(--bg-primary);
+    color: var(--accent-color);
+    box-shadow: var(--shadow);
+}
+
+/* Editor Textarea */
+.editor-textarea {
+    flex: 1;
+    width: 100%;
+    padding: 20px;
+    border: none;
+    outline: none;
+    resize: none;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    tab-size: 4;
+}
+
+.editor-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* Preview Content */
+.preview-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: var(--bg-secondary);
+}
+
+/* Divider */
+.divider {
+    width: 6px;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    cursor: col-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.divider:hover {
+    background: var(--accent-color);
+}
+
+.divider-handle {
+    width: 2px;
+    height: 30px;
+    background: var(--border-color);
+    border-radius: 1px;
+}
+
+.divider:hover .divider-handle {
+    background: white;
+}
+
+/* Status Bar */
+.statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 28px;
+    padding: 0 16px;
+    background-color: var(--bg-tertiary);
+    border-top: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.status-left,
+.status-center,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Toast Container */
+.toast-container {
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+    border-left: 3px solid var(--success-color);
+}
+
+.toast.error {
+    border-left: 3px solid var(--error-color);
+}
+
+.toast.info {
+    border-left: 3px solid var(--accent-color);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* Tooltip */
+.tooltip {
+    position: fixed;
+    padding: 6px 10px;
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 1001;
+}
+
+.tooltip.visible {
+    opacity: 1;
+}
+
+/* Markdown Preview Styles */
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text-primary);
+}
+
+.preview-content h1 {
+    padding-bottom: 0.3em;
+    font-size: 2em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview-content h2 {
+    padding-bottom: 0.3em;
+    font-size: 1.5em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview-content h3 {
+    font-size: 1.25em;
+}
+
+.preview-content h4 {
+    font-size: 1em;
+}
+
+.preview-content p {
+    margin-bottom: 16px;
+}
+
+.preview-content a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.preview-content a:hover {
+    text-decoration: underline;
+}
+
+.preview-content strong {
+    font-weight: 600;
+}
+
+.preview-content em {
+    font-style: italic;
+}
+
+.preview-content del {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.preview-content code {
+    padding: 0.2em 0.4em;
+    background: var(--code-bg);
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 85%;
+}
+
+.preview-content pre {
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--code-bg);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.preview-content pre code {
+    padding: 0;
+    background: transparent;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.preview-content blockquote {
+    margin: 16px 0;
+    padding: 0 16px;
+    border-left: 4px solid var(--blockquote-border);
+    color: var(--text-secondary);
+}
+
+.preview-content ul,
+.preview-content ol {
+    margin-bottom: 16px;
+    padding-left: 2em;
+}
+
+.preview-content li {
+    margin-bottom: 4px;
+}
+
+.preview-content li > ul,
+.preview-content li > ol {
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+.preview-content hr {
+    margin: 24px 0;
+    border: none;
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.preview-content table {
+    width: 100%;
+    margin: 16px 0;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.preview-content th,
+.preview-content td {
+    padding: 8px 12px;
+    border: 1px solid var(--table-border);
+}
+
+.preview-content th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+    text-align: left;
+}
+
+.preview-content tr:nth-child(even) {
+    background: var(--bg-secondary);
+}
+
+.preview-content input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: var(--accent-color);
+}
+
+/* Task List Styling */
+.preview-content ul:has(input[type="checkbox"]) {
+    list-style: none;
+    padding-left: 0;
+}
+
+.preview-content li:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Selection */
+::selection {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* ============ 图片上传模态框 ============ */
+.wiki-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.wiki-modal-overlay.active {
+    display: flex;
+}
+
+.wiki-modal {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.wiki-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.wiki-modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.wiki-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.wiki-modal-close:hover {
+    color: var(--text-primary);
+}
+
+.wiki-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* 上传区域 */
+.image-upload-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.image-upload-section .btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.upload-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--accent-color);
+    animation: progress 1s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* 图片库 */
+.image-library h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.image-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.image-item:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.image-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+}
+
+.image-item .image-name {
+    padding: 6px 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.image-delete {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.image-item:hover .image-delete {
+    display: flex;
+}
+
+/* ============================================
+   响应式设计 - 平板设备 (768px 及以下)
+   ============================================ */
+@media screen and (max-width: 768px) {
+    /* Wiki编辑器头部 */
+    .wiki-editor-header {
+        flex-direction: column;
+        padding: 15px;
+        gap: 10px;
+    }
+    
+    .wiki-editor-header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .wiki-editor-header .title-input {
+        width: 100%;
+    }
+    
+    /* 图片和简介区域 */
+    .wiki-extra-section {
+        flex-direction: column;
+        padding: 15px;
+    }
+    
+    /* 标签区域 */
+    .wiki-tags-section {
+        padding: 15px;
+    }
+    
+    /* 工具栏 - 移动端滚动 */
+    .toolbar {
+        height: auto;
+        min-height: 52px;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        overflow-x: auto;
+    }
+    
+    .toolbar-left {
+        display: none; /* 移动端隐藏左侧文字 */
+    }
+    
+    .toolbar-center {
+        flex: unset;
+        justify-content: flex-start;
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .toolbar-right {
+        margin-left: auto;
+    }
+    
+    .format-buttons {
+        flex-wrap: nowrap;
+        padding: 4px;
+        gap: 2px;
+    }
+    
+    .format-btn {
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+    }
+    
+    .text-btn {
+        font-size: 10px;
+    }
+    
+    .separator {
+        width: 1px;
+        margin: 0 2px;
+        flex-shrink: 0;
+    }
+    
+    /* 编辑器容器 - 移动端单列布局 */
+    .editor-container {
+        flex-direction: column;
+        max-height: none;
+        height: auto;
+    }
+    
+    .editor-panel,
+    .preview-panel {
+        min-width: 100%;
+        max-height: 300px;
+    }
+    
+    .preview-panel {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .divider {
+        display: none; /* 移动端隐藏分割线 */
+    }
+    
+    /* 面板头部 */
+    .panel-header {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+    
+    /* 编辑器和预览内容 */
+    .editor-textarea,
+    .preview-content {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* 状态栏 */
+    .statusbar {
+        height: auto;
+        min-height: 28px;
+        padding: 4px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .status-left,
+    .status-center,
+    .status-right {
+        font-size: 11px;
+        gap: 8px;
+    }
+    
+    /* 底部操作区 */
+    .wiki-editor-footer {
+        flex-direction: column;
+        padding: 15px;
+        gap: 10px;
+    }
+    
+    .action-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* 模态框 */
+    .wiki-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .wiki-modal-body {
+        padding: 15px;
+    }
+    
+    .image-upload-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .image-upload-section .btn {
+        justify-content: center;
+    }
+    
+    .upload-hint {
+        text-align: center;
+    }
+    
+    .image-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ============================================
+   响应式设计 - 手机设备 (480px 及以下)
+   ============================================ */
+@media screen and (max-width: 480px) {
+    /* Wiki编辑器头部 */
+    .wiki-editor-header {
+        padding: 10px;
+    }
+    
+    .wiki-editor-header h1 {
+        font-size: 1rem;
+        margin: 0;
+    }
+    
+    /* 图片和简介区域 */
+    .wiki-extra-section {
+        padding: 10px;
+    }
+    
+    .extra-field {
+        margin-bottom: 15px;
+    }
+    
+    /* 标签区域 */
+    .wiki-tags-section {
+        padding: 10px;
+    }
+    
+    .tags-container {
+        max-height: 80px;
+    }
+    
+    /* 工具栏 - 更紧凑 */
+    .toolbar {
+        padding: 6px 8px;
+    }
+    
+    .format-btn {
+        width: 26px;
+        height: 26px;
+    }
+    
+    .action-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .action-btn svg {
+        display: none; /* 移动端隐藏按钮图标 */
+    }
+    
+    /* 编辑器容器 */
+    .editor-panel,
+    .preview-panel {
+        max-height: 250px;
+    }
+    
+    .editor-textarea,
+    .preview-content {
+        padding: 10px;
+        font-size: 13px;
+    }
+    
+    /* 状态栏 */
+    .statusbar {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    /* 底部操作区 */
+    .wiki-editor-footer {
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        z-index: 100;
+    }
+    
+    .wiki-editor-container {
+        padding-bottom: 70px; /* 为固定底部导航留出空间 */
+    }
+    
+    /* 图片网格 */
+    .image-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .image-item img {
+        height: 80px;
+    }
+    
+    /* Toast 提示 */
+    .wiki-toast-container {
+        bottom: 80px;
+        left: 10px;
+        right: 10px;
+    }
+    
+    .wiki-toast {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   横屏手机适配
+   ============================================ */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .wiki-editor-header {
+        padding: 8px 15px;
+    }
+    
+    .wiki-extra-section,
+    .wiki-tags-section {
+        display: none; /* 横屏时隐藏额外区域，专注编辑 */
+    }
+    
+    .editor-container {
+        flex-direction: row;
+        height: calc(100vh - 120px);
+    }
+    
+    .editor-panel,
+    .preview-panel {
+        max-height: 100%;
+    }
+    
+    .wiki-editor-footer {
+        position: relative;
+        padding: 8px 15px;
+    }
+}
+
+/* ============================================
+   触摸友好 - 增大触摸目标
+   ============================================ */
+@media (hover: none) and (pointer: coarse) {
+    .format-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .action-btn {
+        min-height: 44px;
+    }
+    
+    .wiki-modal-close {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .image-delete {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+}
